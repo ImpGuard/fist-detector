@@ -12,25 +12,6 @@ var Webcam = function(spec, me) {
     var $video = $("<video />").hide(),
         video = $video[0];
 
-    var setup = function() {
-        if (!UserMedia.exists()) {
-            that.errorHandler("Webcam not supported");
-        } else if (!$canvas.length) {
-            that.errorHandler("Invalid arguments passed");
-        }
-
-        canvas = $canvas[0];
-        ctx = canvas.getContext("2d");
-
-        UserMedia.get({ video: true }, function(stream) {
-            video.src = URL.createObjectURL(stream);
-        }, that.errorHandler);
-
-        $video.on("loadedmetadata", function() {
-            me.ready = true;
-        });
-    };
-
     /************************************************************
      * Protected
      ************************************************************/
@@ -98,7 +79,22 @@ var Webcam = function(spec, me) {
      * Constructor
      ************************************************************/
 
-    setup();
+    if (!UserMedia.exists()) {
+            that.errorHandler("Webcam not supported");
+        } else if (!$canvas.length) {
+            that.errorHandler("Invalid arguments passed");
+        }
+
+        canvas = $canvas[0];
+        ctx = canvas.getContext("2d");
+
+        UserMedia.get({ video: true }, function(stream) {
+            video.src = URL.createObjectURL(stream);
+        }, that.errorHandler);
+
+        $video.on("loadedmetadata", function() {
+            me.ready = true;
+    });
 
     return that;
 };

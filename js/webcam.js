@@ -1,92 +1,104 @@
-var Webcam = function(canvas, errorHandler) {
-    // Default error handler
-    errorHandler = errorHandler || function() {};
+var Webcam = function(spec, me) {
+
+    /************************************************************
+     * Private
+     ************************************************************/
 
     // Canvas variables that webcam will draw onto
-    var $canvas = $(canvas),
-        canvas = $canvas[0],
-        ctx;
+    var $canvas = $(spec.canvas),
+        canvas, ctx;
 
-    // Hidden video element appended to the body element
+    // Hidden video element appended to body element
     var $video = $("<video />").hide(),
         video = $video[0];
 
-    // State variables
-    var ready = false,
-        capturing = false;
+    var setup = function() {
+        if (!UserMedia.exists()) {
+            that.errorHandler("Webcam not supported");
+        } else if (!$canvas.length) {
+            that.errorHandler("Invalid arguments passed");
+        }
 
-    // Automatically setup webcam
+        canvas = $canvas[0];
+        ctx = canvas.getContext("2d");
 
-    if (!Util.hasGetUserMedia()) {
-        errorHandler("Webcam not supported")
-    } else if (!$canvas.length) {
-        errorHandler("Invalid arguments passed")
-    }
+        UserMedia.get({ video: true }, function(stream) {
+            video.src = URL.createObjectURL(stream);
+        }, that.errorHandler);
 
-    Util.getUserMedia({ video: true }, function(stream) {
-        video.src = URL.createObjectURL(stream);
-    }, errorHandler);
+        $video.on("loadedmetadata", function() {
+            me.ready = true;
+        });
+    };
 
-    $video.on("loadedmetadata", function() {
-        ready = true;
-    });
+    /************************************************************
+     * Protected
+     ************************************************************/
 
-    ctx = canvas.getContext("2d");
+    me = me || {};
 
-    // Instance methods
+    me.ready = false;
+    me.capturing = false;
 
-    var isReady = function() {
-        return ready;
-    }
-
-    var draw = function() {
+    me.draw = function() {
         ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
 
-        if (capturing) {
-            requestAnimationFrame(draw);
+        if (me.capturing) {
+            requestAnimationFrame(me.draw);
         }
     };
 
-    var start = function() {
-        if (!ready) {
-            setTimeout(start, 500);
+    /************************************************************
+     * Public
+     ************************************************************/
+
+    var that = {};
+
+    // Error handling function
+    that.errorHandler = spec.errorHandler || function() {};
+
+    that.isReady = function() {
+        return ready;
+    };
+
+    that.start = function() {
+        if (!me.ready) {
+            setTimeout(that.start, 500);
         }
 
         video.play();
-        capturing = true;
-        requestAnimationFrame(draw);
+        me.capturing = true;
+        requestAnimationFrame(me.draw);
     };
 
-    var stop = function() {
+    that.stop = function() {
         video.pause();
-        capturing = false;
+        me.capturing = false;
     };
 
-    var snapshot = function() {
-        if (!capturing || !ready) return;
+    that.snapshot = function() {
+        if (!me.capturing || !me.ready) return;
 
         return ctx.getImageData(0, 0, canvas.width, canvas.height);
     };
 
-    var getContext = function() {
+    that.context = function() {
         return ctx;
     };
 
-    var width = function() {
+    that.width = function() {
         return canvas.width;
-    }
+    };
 
-    var height = function() {
+    that.height = function() {
         return canvas.height;
-    }
+    };
 
-    var that = {};
-    that.start = start;
-    that.stop = stop;
-    that.getContext = getContext;
-    that.video = video;
-    that.width = width;
-    that.height = height;
+    /************************************************************
+     * Constructor
+     ************************************************************/
+
+    setup();
 
     return that;
-}
+};

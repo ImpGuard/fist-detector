@@ -22,9 +22,13 @@
 
     <script src="js/util.js"></script>
     <script src="js/webcam.js"></script>
+    <script src="js/skin.js"></script>
 
     <script>
-        var webcam = Webcam("#display", function(msg) { console.log(msg) });
+        var webcam = Webcam({
+            canvas: "#display",
+            errorHandler: function(msg) { console.log(msg) }
+        });
 
         webcam.start();
     </script>

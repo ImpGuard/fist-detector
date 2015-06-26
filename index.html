@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fist Detection</title>
+
+    <style>
+        body {
+            text-align: center;
+        }
+
+        canvas {
+            display: inline-block;
+            border: 1px solid gray;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="display" width="480" height="360"></canvas>
+    <canvas id="output" width="480" height="360"></canvas>
+
+    <script src="lib/jquery.min.js"></script>
+
+    <script src="js/util.js"></script>
+    <script src="js/webcam.js"></script>
+
+    <script>
+        var webcam = Webcam("#display", function(msg) { console.log(msg) });
+
+        webcam.start();
+    </script>
+</body>
+</html>

@@ -11,26 +11,50 @@
         canvas {
             display: inline-block;
             border: 1px solid gray;
+            transform: scale(-1, 1);
+        }
+
+        #display {
+            position: relative;
+            display: inline-block;
+        }
+
+        #color {
+            border: 1px solid gray;
+            position: absolute;
+            top: 0; left: 0;
         }
     </style>
 </head>
 <body>
-    <canvas id="display" width="480" height="360"></canvas>
+    <div id="display">
+        <canvas id="webcam" width="480" height="360"></canvas>
+        <div id="color" style="width: 30px; height: 30px;"></div>
+    </div>
+
     <canvas id="output" width="480" height="360"></canvas>
 
     <script src="lib/jquery.min.js"></script>
 
     <script src="js/util.js"></script>
     <script src="js/webcam.js"></script>
-    <script src="js/skin.js"></script>
+    <script src="js/skin_webcam.js"></script>
 
     <script>
-        var webcam = Webcam({
-            canvas: "#display",
+        var webcam = SkinWebcam({
+            canvas: "#webcam",
             errorHandler: function(msg) { console.log(msg) }
         });
 
         webcam.start();
+
+        $(window).click(function() {
+            var skinColor = webcam.calculateSkinColor();
+
+            $("#color").css({
+                "background-color": skinColor.rgbstring()
+            });
+        });
     </script>
 </body>
 </html>

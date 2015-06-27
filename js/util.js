@@ -53,3 +53,41 @@ var Pixel = function(spec) {
 
     return that;
 };
+
+var Color = function(spec) {
+    that = {
+        r: (spec && spec.r) || 0,
+        g: (spec && spec.g) || 0,
+        b: (spec && spec.b) || 0
+    };
+
+    that.string = function() {
+        return that.r + "," + that.g + "," + that.b;
+    };
+
+    that.rgbstring = function() {
+        return "rgb(" + Math.floor(that.r) + "," + Math.floor(that.g) + "," + Math.floor(that.b) + ")";
+    }
+
+    return that;
+}
+
+var Image = function(spec) {
+    var that = {
+        data: spec.data || { width: 0, height: 0, data: [] }
+    };
+
+    that.color = function(i, j) {
+        if (that.data.width == 0 || that.data.height == 0 || i >= that.data.width || i < 0 || j >= that.data.height || j < 0) return null;
+
+        var index = i * 4 + j * 4 * that.data.width;
+
+        return Color({
+            r: that.data.data[index + 0],
+            g: that.data.data[index + 1],
+            b: that.data.data[index + 2]
+        });
+    };
+
+    return that;
+}

@@ -4,6 +4,9 @@ var Webcam = function(spec, me) {
      * Private
      ************************************************************/
 
+    me = me || {};
+    var that = {};
+
     // Canvas variables that webcam will draw onto
     var $canvas = $(spec.canvas),
         canvas, ctx;
@@ -16,13 +19,14 @@ var Webcam = function(spec, me) {
      * Protected
      ************************************************************/
 
-    me = me || {};
-
     me.ready = false;
     me.capturing = false;
 
     me.draw = function() {
+        ctx.save();
+        // ctx.scale(-1, -1);
         ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
 
         if (me.capturing) {
             requestAnimationFrame(me.draw);
@@ -32,8 +36,6 @@ var Webcam = function(spec, me) {
     /************************************************************
      * Public
      ************************************************************/
-
-    var that = {};
 
     // Error handling function
     that.errorHandler = spec.errorHandler || function() {};
@@ -80,20 +82,20 @@ var Webcam = function(spec, me) {
      ************************************************************/
 
     if (!UserMedia.exists()) {
-            that.errorHandler("Webcam not supported");
-        } else if (!$canvas.length) {
-            that.errorHandler("Invalid arguments passed");
-        }
+        that.errorHandler("Webcam not supported");
+    } else if (!$canvas.length) {
+        that.errorHandler("Invalid arguments passed");
+    }
 
-        canvas = $canvas[0];
-        ctx = canvas.getContext("2d");
+    canvas = $canvas[0];
+    ctx = spec.context || canvas.getContext("2d");
 
-        UserMedia.get({ video: true }, function(stream) {
-            video.src = URL.createObjectURL(stream);
-        }, that.errorHandler);
+    UserMedia.get({ video: true }, function(stream) {
+        video.src = URL.createObjectURL(stream);
+    }, that.errorHandler);
 
-        $video.on("loadedmetadata", function() {
-            me.ready = true;
+    $video.on("loadedmetadata", function() {
+        me.ready = true;
     });
 
     return that;

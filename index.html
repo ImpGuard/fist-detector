@@ -3,6 +3,9 @@
 <head>
     <title>Fist Detection</title>
 
+    <link rel="stylesheet" href="lib/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="lib/bootstrap/bootflat.min.css">
+
     <style>
         body {
             text-align: center;
@@ -14,25 +17,61 @@
             transform: scale(-1, 1);
         }
 
-        #display {
+        .display {
             position: relative;
             display: inline-block;
+
+            margin-top: 10px;
+            vertical-align: top;
         }
 
         #color {
-            border: 1px solid gray;
             position: absolute;
-            top: 0; left: 0;
+            top: 1px; left: 1px;
+        }
+
+        #timer {
+            position: absolute;
+            top: 165px; left: 210px;
+            background-color: white;
+            border: 3px solid black;
+            border-radius: 50% 50%;
+            width: 60px; height: 60px;
+            display: none;
+        }
+
+        #timer .text {
+            color: black;
+            font-size: 30px;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
         }
     </style>
 </head>
 <body>
-    <div id="display">
-        <canvas id="webcam" width="480" height="360"></canvas>
-        <div id="color" style="width: 30px; height: 30px;"></div>
+    <div id="container">
+        <div id="leftDisplay" class="display">
+            <div class="screen">
+                <canvas id="webcam" width="480" height="360"></canvas>
+                <div id="color" style="width: 30px; height: 30px;"></div>
+                <div id="timer">
+                    <div class="text"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="toggleOverlay()">Toggle Fist Overlay (T)</button>
+                <button class="btn btn-primary" onclick="captureSkinColor(3)">Capture Skin Color (C)</button>
+            </div>
+        </div>
+
+        <div id="rightDisplay" class="display">
+            <canvas id="output" width="480" height="360"></canvas>
+        </div>
     </div>
 
-    <canvas id="output" width="480" height="360"></canvas>
+    <!-- Scripts -->
 
     <script src="lib/jquery.min.js"></script>
 
@@ -48,13 +87,35 @@
 
         webcam.start();
 
-        $(window).on("keypress", function(e) {
-            if (e.keyCode == 32) {
+        var captureSkinColor = function(delay) {
+            if (delay <= 0) {
+                $("#timer").hide();
+                webcam.hideOverlay();
+                $("#leftDisplay .screen").animate({ opacity: 0 }, 25).delay(25).animate({ opacity: 1 }, 100);
+
                 var skinColor = webcam.calculateSkinColor();
 
                 $("#color").css({
                     "background-color": skinColor.rgbstring()
                 });
+            } else {
+                $("#timer .text").html(delay);
+                $("#timer").show();
+                webcam.showOverlay();
+
+                setTimeout(captureSkinColor, 1000, delay - 1);
+            }
+        };
+
+        var toggleOverlay = function() {
+            webcam.toggleOverlay();
+        };
+
+        $(window).on("keypress", function(e) {
+            if (e.keyCode == 99) {
+                captureSkinColor(3);
+            } else if (e.keyCode == 116) {
+                toggleOverlay();
             }
 
             return false;

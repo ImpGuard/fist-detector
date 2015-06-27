@@ -7,7 +7,7 @@ var SkinWebcam = function(spec, me) {
     me = me || {};
     var that = Webcam(spec, me);
 
-    var superDraw = me.superior("draw");
+    var superDraw = superMethod.call(me, "draw");
 
     /************************************************************
      * Protected
@@ -21,7 +21,7 @@ var SkinWebcam = function(spec, me) {
         ctx.save();
 
         ctx.beginPath();
-        ctx.strokeStyle = "#FF0000";
+        ctx.strokeStyle = "#50FF5B";
         ctx.lineWidth = 2;
         ctx.moveTo(webcam.width() * 0.25 - 30, webcam.height() * 0.55 - 40);
         ctx.lineTo(webcam.width() * 0.25 - 30, webcam.height() * 0.55 + 40);
@@ -91,6 +91,10 @@ var SkinWebcam = function(spec, me) {
         return that.skinColor;
     };
 
+    that.toggleOverlay = function() {
+        me.showOverlay = !me.showOverlay;
+    }
+
     that.showOverlay = function() {
         me.showOverlay = true;
     };
@@ -106,4 +110,4 @@ var SkinWebcam = function(spec, me) {
     });
 
     return that;
-}
+};

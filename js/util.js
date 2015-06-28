@@ -43,7 +43,7 @@ var Pixel = function(spec) {
     };
 
     that.distance = function(pixel) {
-        return Math.sqrt(squaredDistance(pixel));
+        return Math.sqrt(that.squaredDistance(pixel));
     };
 
     return that;
@@ -54,6 +54,14 @@ var Color = function(spec) {
         r: (spec && spec.r) || 0,
         g: (spec && spec.g) || 0,
         b: (spec && spec.b) || 0
+    };
+
+    that.squaredDistance = function(color) {
+        return Math.pow(color.r - that.r, 2) + Math.pow(color.g - that.g, 2) + Math.pow(color.b - that.b, 2);
+    };
+
+    that.distance = function(color) {
+        return Math.sqrt(that.squaredDistance(color));
     };
 
     that.string = function() {

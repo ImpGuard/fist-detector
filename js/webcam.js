@@ -40,8 +40,8 @@ var Webcam = function(spec, me) {
     // Error handling function
     that.errorHandler = spec.errorHandler || function() {};
 
-    that.isReady = function() {
-        return ready;
+    that.ready = function() {
+        return me.ready;
     };
 
     that.start = function() {

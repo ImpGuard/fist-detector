@@ -78,6 +78,7 @@
     <script src="js/util.js"></script>
     <script src="js/webcam.js"></script>
     <script src="js/skin_webcam.js"></script>
+    <script src="js/fist_detector.js"></script>
 
     <script>
         var webcam = SkinWebcam({
@@ -85,7 +86,13 @@
             errorHandler: function(msg) { console.log(msg) }
         });
 
+        var fistDetector = FistDetector({
+            canvas: "#output",
+            webcam: webcam
+        });
+
         webcam.start();
+        fistDetector.start();
 
         var captureSkinColor = function(delay) {
             if (delay <= 0) {

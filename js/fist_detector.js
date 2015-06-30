@@ -26,38 +26,68 @@ var FistDetector = function(spec, me) {
     var analyzing = false;
 
     // Detection information
-    var skinPixels, leftPixel, rightPixel;
+    var leftPixel, rightPixel;
 
-    var gatherSkinPixels = function() {
-        skinPixels = [];
-
-        var image = Image({ data: webcam.snapshot() });
+    var sampleImage = function(image) {
+        var width = Math.floor(webcam.width() / samplingFreq),
+            height = Math.floor(webcam.height() / samplingFreq),
+            sampledImage = Array.matrix(width, height, null);
 
         for (var i = 0; i < webcam.width(); i += samplingFreq) {
             for (var j = 0; j < webcam.height(); j += samplingFreq) {
                 var color = image.color(i, j);
 
+                sampledImage[i / samplingFreq][j / samplingFreq] = color;
+            }
+        }
+
+        return sampledImage;
+    };
+
+    var gatherSkinPixels = function(matrix) {
+        var width = matrix.length,
+            height = matrix[0].length;
+
+        for (var i = 0; i < width; i++) {
+            for (var j = 0; j < height; j++) {
+                var color = matrix[i][j];
+
                 if (color.squaredDistance(webcam.skinColor) <= SKIN_COLOR_THRESHOLD) {
-                    skinPixels.push(Pixel({ x: i, y: j }));
+                    matrix[i][j] = 1;
+                } else {
+                    matrix[i][j] = 0;
                 }
             }
         }
     };
 
-    var displaySkinPixels = function() {
+    var displaySkinPixels = function(matrix) {
         if ($canvas.length) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "rgb(0, 0, 0)";
-            for (var i = 0; i < skinPixels.length; i++) {
-                var pixel = skinPixels[i];
-                ctx.fillRect(pixel.x - samplingFreq / 2, pixel.y - samplingFreq / 2, samplingFreq + 1, samplingFreq + 1);
+            for (var i = 0; i < webcam.width(); i += samplingFreq) {
+                for (var j = 0; j < webcam.height(); j += samplingFreq) {
+
+                    if (matrix[i / samplingFreq][j / samplingFreq] == 1) {
+                        ctx.fillRect(i - samplingFreq / 2, j - samplingFreq / 2, samplingFreq + 1, samplingFreq + 1);
+                    }
+                }
             }
         }
     };
 
     var detectFists = function() {
-        gatherSkinPixels();
-        displaySkinPixels();
+        var image, sampledMatrix;
+
+        // Convert webcam image into a sample matrix
+        image = ImageDataWrapper({ data: webcam.snapshot() });
+        sampledMatrix = sampleImage(image);
+
+        // Apply filters and detect fists
+        gatherSkinPixels(sampledMatrix);
+
+        // Display logging information in canvas
+        displaySkinPixels(sampledMatrix);
 
         requestAnimationFrame(detectFists);
     };

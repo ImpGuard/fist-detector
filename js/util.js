@@ -1,12 +1,27 @@
 // Utility methods
 
-var superMethod = function (name) {
-    var that = this,
+Object.super = function (obj, name) {
+    var that = obj,
         method = that[name];
 
     return function() {
         return method.apply(that, arguments);
     };
+};
+
+Array.matrix = function (m, n, initial) {
+    var a, i, j, mat = [];
+
+    for (i = 0; i < m; i += 1) {
+        a = [];
+        for (j = 0; j < n; j += 1) {
+            a[j] = initial;
+        }
+
+        mat[i] = a;
+    }
+
+    return mat;
 };
 
 // Utility functions
@@ -50,7 +65,7 @@ var Pixel = function(spec) {
 };
 
 var Color = function(spec) {
-    that = {
+    var that = {
         r: (spec && spec.r) || 0,
         g: (spec && spec.g) || 0,
         b: (spec && spec.b) || 0
@@ -75,7 +90,7 @@ var Color = function(spec) {
     return that;
 }
 
-var Image = function(spec) {
+var ImageDataWrapper = function(spec) {
     var that = {
         data: spec.data || { width: 0, height: 0, data: [] }
     };

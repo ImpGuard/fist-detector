@@ -7,7 +7,7 @@ var SkinWebcam = function(spec, me) {
     me = me || {};
     var that = Webcam(spec, me);
 
-    var superDraw = superMethod.call(me, "draw");
+    var superDraw = Object.super(me, "draw");
 
     /************************************************************
      * Protected
@@ -53,9 +53,7 @@ var SkinWebcam = function(spec, me) {
      ************************************************************/
 
     that.calculateSkinColor = function() {
-        var image = Image({
-            data: that.snapshot()
-        });
+        var image = ImageDataWrapper({ data: that.snapshot() });
 
         var totalColor = Color();
         var numPixels = 0;

@@ -20,7 +20,7 @@ var FistDetector = function(spec, me) {
         canvas, ctx;
 
     // Sampling Frequency when gathering skin pixels.
-    var samplingFreq = spec.samplingFrequency || 2;
+    var samplingFreq = spec.samplingFrequency || 5;
 
     // State information
     var analyzing = false;

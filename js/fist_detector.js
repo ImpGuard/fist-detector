@@ -4,6 +4,7 @@ var FistDetector = function(spec, me) {
      ************************************************************/
 
      var SKIN_COLOR_THRESHOLD = 1500;
+     WINDOW_EDGE_SIZE = 5;
 
     /************************************************************
      * Private
@@ -46,19 +47,47 @@ var FistDetector = function(spec, me) {
 
     var gatherSkinPixels = function(matrix) {
         var width = matrix.length,
-            height = matrix[0].length;
+            height = matrix[0].length,
+            newMatrix = Array.matrix(width, height, 0);
 
         for (var i = 0; i < width; i++) {
             for (var j = 0; j < height; j++) {
                 var color = matrix[i][j];
 
                 if (color.squaredDistance(webcam.skinColor) <= SKIN_COLOR_THRESHOLD) {
-                    matrix[i][j] = 1;
+                    newMatrix[i][j] = 1;
                 } else {
-                    matrix[i][j] = 0;
+                    newMatrix[i][j] = 0;
                 }
             }
         }
+
+        return newMatrix;
+    };
+
+    var meanFilter = function(matrix) {
+        var width = matrix.length,
+            height = matrix[0].length,
+            newMatrix = Array.matrix(width, height, 0);
+
+        var halfEdgeSize = (WINDOW_EDGE_SIZE - 1) / 2,
+            windowSize = WINDOW_EDGE_SIZE * WINDOW_EDGE_SIZE;
+
+        for (var i = halfEdgeSize; i < width - halfEdgeSize; i++) {
+            for (var j = halfEdgeSize; j < height - halfEdgeSize; j++) {
+                var average = 0;
+
+                for (var wi = -halfEdgeSize; wi <= halfEdgeSize; wi++) {
+                    for (var wj = -halfEdgeSize; wj <= halfEdgeSize; wj++) {
+                        average += matrix[i + wi][j + wj];
+                    }
+                }
+
+                newMatrix[i][j] = Math.round(average / windowSize);
+            }
+        }
+
+        return newMatrix;
     };
 
     var displaySkinPixels = function(matrix) {
@@ -77,17 +106,18 @@ var FistDetector = function(spec, me) {
     };
 
     var detectFists = function() {
-        var image, sampledMatrix;
+        var image, matrix;
 
         // Convert webcam image into a sample matrix
         image = ImageDataWrapper({ data: webcam.snapshot() });
-        sampledMatrix = sampleImage(image);
+        matrix = sampleImage(image);
 
         // Apply filters and detect fists
-        gatherSkinPixels(sampledMatrix);
+        matrix = gatherSkinPixels(matrix);
+        matrix = meanFilter(matrix);
 
         // Display logging information in canvas
-        displaySkinPixels(sampledMatrix);
+        displaySkinPixels(matrix);
 
         requestAnimationFrame(detectFists);
     };

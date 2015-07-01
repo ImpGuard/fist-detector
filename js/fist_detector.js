@@ -3,7 +3,7 @@ var FistDetector = function(spec, me) {
      * Constants
      ************************************************************/
 
-     var SKIN_COLOR_THRESHOLD = 1500;
+     var SKIN_COLOR_THRESHOLD = 4000;
      WINDOW_EDGE_SIZE = 5;
 
     /************************************************************
@@ -90,19 +90,27 @@ var FistDetector = function(spec, me) {
         return newMatrix;
     };
 
-    var displaySkinPixels = function(matrix) {
-        if ($canvas.length) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "rgb(0, 0, 0)";
-            for (var i = 0; i < webcam.width(); i += samplingFreq) {
-                for (var j = 0; j < webcam.height(); j += samplingFreq) {
+    var findFists = function(matrix) {
 
-                    if (matrix[i / samplingFreq][j / samplingFreq] == 1) {
-                        ctx.fillRect(i - samplingFreq / 2, j - samplingFreq / 2, samplingFreq + 1, samplingFreq + 1);
-                    }
+    };
+
+    var displaySkinPixels = function(matrix) {
+        ctx.fillStyle = "rgb(0, 0, 0)";
+        for (var i = 0; i < webcam.width(); i += samplingFreq) {
+            for (var j = 0; j < webcam.height(); j += samplingFreq) {
+
+                if (matrix[i / samplingFreq][j / samplingFreq] == 1) {
+                    ctx.fillRect(i - samplingFreq / 2, j - samplingFreq / 2, samplingFreq + 1, samplingFreq + 1);
                 }
             }
         }
+    };
+
+    var displayFists = function() {
+        ctx.fillStyle = "rgb(255, 0, 0)";
+        ctx.fillRect(leftPixel.x - samplingFreq / 2, leftPixel.y - samplingFreq / 2, samplingFreq + 3, samplingFreq + 3);
+        ctx.fillStyle = "rgb(0, 255, 0)";
+        ctx.fillRect(rightPixel.x - samplingFreq / 2, rightPixel.y - samplingFreq / 2, samplingFreq + 3, samplingFreq + 3);
     };
 
     var detectFists = function() {
@@ -112,12 +120,19 @@ var FistDetector = function(spec, me) {
         image = ImageDataWrapper({ data: webcam.snapshot() });
         matrix = sampleImage(image);
 
-        // Apply filters and detect fists
+        // Apply skin filters
         matrix = gatherSkinPixels(matrix);
         matrix = meanFilter(matrix);
 
+        // Detect fists
+        findFists(matrix);
+
         // Display logging information in canvas
-        displaySkinPixels(matrix);
+        if ($canvas.length) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            displaySkinPixels(matrix);
+            displayFists();
+        }
 
         requestAnimationFrame(detectFists);
     };
@@ -151,6 +166,9 @@ var FistDetector = function(spec, me) {
 
      canvas = $canvas[0];
      ctx = canvas.getContext("2d");
+
+     leftPixel = Pixel({ x: webcam.width() * 0.25, y: webcam.height() * 0.55 });
+     rightPixel = Pixel({ x: webcam.width() * 0.75, y: webcam.height() * 0.55 });
 
      return that;
 };

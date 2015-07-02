@@ -4,7 +4,10 @@ var FistDetector = function(spec, me) {
      ************************************************************/
 
      var SKIN_COLOR_THRESHOLD = 4000;
-     WINDOW_EDGE_SIZE = 5;
+     var WINDOW_EDGE_SIZE = 5;
+     var FIST_WEIGHT_THRESHOLD = 10;
+     var FIST_DISPLACEMENT_THRESHOLD = 1000;
+
 
     /************************************************************
      * Private
@@ -129,8 +132,15 @@ var FistDetector = function(spec, me) {
         leftBucket.div(leftTotal);
         rightBucket.div(rightTotal);
 
-        leftPixel = Pixel({ x: leftBucket.x * samplingFreq, y: leftBucket.y * samplingFreq });
-        rightPixel = Pixel({ x: rightBucket.x * samplingFreq, y: rightBucket.y * samplingFreq });
+        // Only update means if fists detected
+        if (leftBucket.squaredDistance(left) < FIST_DISPLACEMENT_THRESHOLD &&
+            rightBucket.squaredDistance(right) < FIST_DISPLACEMENT_THRESHOLD &&
+            leftTotal > FIST_WEIGHT_THRESHOLD &&
+            rightTotal > FIST_WEIGHT_THRESHOLD) {
+
+            leftPixel = Pixel({ x: leftBucket.x * samplingFreq, y: leftBucket.y * samplingFreq });
+            rightPixel = Pixel({ x: rightBucket.x * samplingFreq, y: rightBucket.y * samplingFreq });
+        }
     };
 
     var displaySkinPixels = function(matrix) {

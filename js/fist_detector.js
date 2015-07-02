@@ -90,16 +90,62 @@ var FistDetector = function(spec, me) {
         return newMatrix;
     };
 
-    var findFists = function(matrix) {
+    var distanceWeight = function(dist) {
+        return 1 / (1 + Math.exp(0.01 * (dist - 1)));
+    };
 
+    var findFists = function(matrix) {
+        var width = matrix.length, height = matrix[0].length,
+            left = Pixel({ x: leftPixel.x / samplingFreq, y: leftPixel.y / samplingFreq }),
+            right = Pixel({ x: rightPixel.x / samplingFreq, y: rightPixel.y / samplingFreq }),
+            leftBucket = Pixel(), rightBucket = Pixel(), leftTotal = 0, rightTotal = 0;
+
+        // Gather pixels
+        for (var i = 0; i < width; i++) {
+            for (var j = 0; j < height; j++) {
+                if (matrix[i][j] == 1) {
+                    var pixel = Pixel({ x: i, y: j });
+
+                    var leftDist = left.squaredDistance(pixel),
+                        rightDist = right.squaredDistance(pixel),
+                        weight;
+
+                    if (leftDist < rightDist) {
+                        weight = distanceWeight(leftDist);
+                        leftBucket.add(pixel.mult(weight));
+                        leftTotal += weight;
+                        matrix[i][j] = { left: true, weight: weight };
+                    } else {
+                        weight = distanceWeight(rightDist);
+                        rightBucket.add(pixel.mult(weight));
+                        rightTotal += weight;
+                        matrix[i][j] = { left: false, weight: weight };
+                    }
+                }
+            }
+        }
+
+        // Calculate new means
+        leftBucket.div(leftTotal);
+        rightBucket.div(rightTotal);
+
+        leftPixel = Pixel({ x: leftBucket.x * samplingFreq, y: leftBucket.y * samplingFreq });
+        rightPixel = Pixel({ x: rightBucket.x * samplingFreq, y: rightBucket.y * samplingFreq });
     };
 
     var displaySkinPixels = function(matrix) {
-        ctx.fillStyle = "rgb(0, 0, 0)";
-        for (var i = 0; i < webcam.width(); i += samplingFreq) {
-            for (var j = 0; j < webcam.height(); j += samplingFreq) {
+        for (var i = 0, x = 0; i < webcam.width(); i += samplingFreq, x++) {
+            for (var j = 0, y = 0; j < webcam.height(); j += samplingFreq, y++) {
+                var content = matrix[x][y];
+                if (content) {
+                    var color = Math.floor(255 * content.weight);
 
-                if (matrix[i / samplingFreq][j / samplingFreq] == 1) {
+                    if (content.left) {
+                        ctx.fillStyle = "rgb(0, " + color + ", 0)";
+                    } else {
+                        ctx.fillStyle = "rgb(0, 0, " + color + ")";
+                    }
+
                     ctx.fillRect(i - samplingFreq / 2, j - samplingFreq / 2, samplingFreq + 1, samplingFreq + 1);
                 }
             }
@@ -109,7 +155,6 @@ var FistDetector = function(spec, me) {
     var displayFists = function() {
         ctx.fillStyle = "rgb(255, 0, 0)";
         ctx.fillRect(leftPixel.x - samplingFreq / 2, leftPixel.y - samplingFreq / 2, samplingFreq + 3, samplingFreq + 3);
-        ctx.fillStyle = "rgb(0, 255, 0)";
         ctx.fillRect(rightPixel.x - samplingFreq / 2, rightPixel.y - samplingFreq / 2, samplingFreq + 3, samplingFreq + 3);
     };
 
@@ -135,6 +180,7 @@ var FistDetector = function(spec, me) {
         }
 
         requestAnimationFrame(detectFists);
+        // setTimeout(detectFists, 5000);
     };
 
     /************************************************************
@@ -156,6 +202,11 @@ var FistDetector = function(spec, me) {
         }
      };
 
+     that.reset = function() {
+         leftPixel = Pixel({ x: webcam.width() * 0.25, y: webcam.height() * 0.55 });
+         rightPixel = Pixel({ x: webcam.width() * 0.75, y: webcam.height() * 0.55 });
+     };
+
      /************************************************************
      * Constructor
      ************************************************************/
@@ -167,8 +218,7 @@ var FistDetector = function(spec, me) {
      canvas = $canvas[0];
      ctx = canvas.getContext("2d");
 
-     leftPixel = Pixel({ x: webcam.width() * 0.25, y: webcam.height() * 0.55 });
-     rightPixel = Pixel({ x: webcam.width() * 0.75, y: webcam.height() * 0.55 });
+     that.reset();
 
      return that;
 };

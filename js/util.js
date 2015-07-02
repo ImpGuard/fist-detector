@@ -48,9 +48,27 @@ var UserMedia = (function() {
 })();
 
 var Pixel = function(spec) {
-    that = {
-        x: spec.x || 0,
-        y: spec.y || 0
+    var that = {
+        x: (spec && spec.x) || 0,
+        y: (spec && spec.y) || 0
+    };
+
+    that.add = function(pixel) {
+        that.x += pixel.x;
+        that.y += pixel.y;
+        return that;
+    };
+
+    that.mult = function(constant) {
+        that.x *= constant;
+        that.y *= constant;
+        return that;
+    };
+
+    that.div = function(constant) {
+        that.x /= constant;
+        that.y /= constant;
+        return that;
     };
 
     that.squaredDistance = function(pixel) {

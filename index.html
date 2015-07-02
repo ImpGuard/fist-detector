@@ -17,6 +17,10 @@
             transform: scale(-1, 1);
         }
 
+        .btn {
+            font-size: 12px;
+        }
+
         .display {
             position: relative;
             display: inline-block;
@@ -63,6 +67,7 @@
             <div class="controls">
                 <button class="btn btn-primary" onclick="toggleOverlay()">Toggle Fist Overlay (T)</button>
                 <button class="btn btn-primary" onclick="captureSkinColor(3)">Capture Skin Color (C)</button>
+                <button class="btn btn-primary" onclick="resetFistDetector()">Reset Fist Detector (R)</button>
             </div>
         </div>
 
@@ -101,6 +106,7 @@
                 $("#leftDisplay .screen").animate({ opacity: 0 }, 25).delay(25).animate({ opacity: 1 }, 100);
 
                 var skinColor = webcam.calculateSkinColor();
+                resetFistDetector();
 
                 $("#color").css({
                     "background-color": skinColor.rgbstring()
@@ -116,6 +122,10 @@
 
         var toggleOverlay = function() {
             webcam.toggleOverlay();
+        };
+
+        var resetFistDetector = function() {
+            fistDetector.reset();
         };
 
         $(window).on("keypress", function(e) {

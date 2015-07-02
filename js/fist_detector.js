@@ -180,7 +180,6 @@ var FistDetector = function(spec, me) {
         }
 
         requestAnimationFrame(detectFists);
-        // setTimeout(detectFists, 5000);
     };
 
     /************************************************************
